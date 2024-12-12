@@ -1,0 +1,7 @@
+*.o
+*.fd
+*.efi
+*.elf
+.DS_Store
+*.swp
+*.EFI
