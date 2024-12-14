@@ -1,21 +1,19 @@
-.PHONY all:
-all: BOOTX64.EFI kernel.elf
-	
-BOOTX64.EFI:
-	cd "$(PWD)/loader" && make
+TARGET = BOOTX64.EFI
+CC:=x86_64-w64-mingw32-gcc
+CFLAGS:=-Wall -Wextra -e efi_main -nostdinc -nostdlib \
+				-Wno-pointer-to-int-cast -fno-builtin -Wl,--subsystem,10 \
+				-I../ueif/
 
-kernel.elf:
-	cd "$(PWD)/kernel" && make
+.PHONY all:
+all: $(TARGET)
+
+$(TARGET): main.c Makefile
+	$(CC) $(CFLAGS) -o $@ $<
 
 run:
-	cp ./loader/BOOTX64.EFI ./fs/EFI/BOOT/BOOTX64.EFI
-	cp ./kernel/kernel.elf ./fs/kernel.elf
+	cp ./BOOTX64.efi ./fs/EFI/BOOT/BOOTX64.efi
 	qemu-system-x86_64 \
-		-m 4G \
-		-drive if=pflash,format=raw,file=./ovmf/OVMF_CODE.fd,readonly=on \
-		-drive if=pflash,format=raw,file=./ovmf/OVMF_VARS.fd \
-		-drive if=ide,format=raw,file=fat:rw:fs,index=0,media=disk \
-		-monitor stdio
-
-init:
-	mkdir -p fs/EFI/BOOT
+         -drive if=pflash,format=raw,file=./OVMF_CODE.fd,readonly=on \
+         -drive if=pflash,format=raw,file=./OVMF_VARS.fd \
+         -drive if=ide,format=raw,file=fat:rw:fs,index=0,media=disk \
+				 -monitor stdio
